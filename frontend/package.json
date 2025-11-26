@@ -12,6 +12,7 @@
     "tailwind:init": "tailwindcss init -p"
   },
   "dependencies": {
+    "@fontsource/dm-sans": "^5.2.8",
     "@midudev/tailwind-animations": "^0.2.0",
     "framer-motion": "^12.23.24",
     "react": "^19.2.0",

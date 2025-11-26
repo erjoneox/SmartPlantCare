@@ -1,39 +1,90 @@
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState, useContext, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { SessionContext } from "../services/SessionContext";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [sessionTime, setSessionTime] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isLoggedIn, logout, getTimeRemaining, user } =
+    useContext(SessionContext);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setSessionTime(null);
+      return;
+    }
+
+    // Update remaining session time
+    const interval = setInterval(() => {
+      const remaining = getTimeRemaining();
+      if (remaining) {
+        const minutes = Math.floor(remaining / 60);
+        const seconds = remaining % 60;
+        setSessionTime(`${minutes}:${seconds < 10 ? "0" : ""}${seconds}`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isLoggedIn, getTimeRemaining]);
 
   const toggleMenu = () => setIsOpen(!isOpen);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+    setIsOpen(false);
+  };
 
   const linkClass = (path) =>
     `block px-3 py-2 rounded-md text-base font-medium ${
       location.pathname === path
-        ? "bg-gray-900 text-white"
-        : "text-gray-300 hover:bg-gray-700 hover:text-white"
+        ? "bg-gray-300 text-green-800"
+        : "text-white hover:bg-gray-200 hover:text-green-800"
     }`;
 
   return (
-    <nav className="bg-gray-800 shadow-md">
+    <nav className="bg-green-600/80 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
-          <div className="flex-shrink-0 text-white font-bold text-xl">
-            My App
+          <div className="shrink-0 text-white font-bold text-xl">
+            SmartPlantCare
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex space-x-4">
+          <div className="hidden md:flex space-x-4 items-center">
             <Link to="/" className={linkClass("/")}>
               Home
             </Link>
-            <Link to="/register" className={linkClass("/register")}>
-              Register
-            </Link>
-            <Link to="/login" className={linkClass("/login")}>
-              Login
-            </Link>
+            {!isLoggedIn ? (
+              <>
+                <Link to="/register" className={linkClass("/register")}>
+                  Register
+                </Link>
+                <Link to="/login" className={linkClass("/login")}>
+                  Login
+                </Link>
+              </>
+            ) : (
+              <>
+                <span className="text-white font-semibold px-3 py-2 cursor-pointer">
+                  Welcome, {user?.name || "User"}
+                </span>
+                {sessionTime && (
+                  <span className="text-black-500 px-3 py-2 text-sm font-semibold">
+                    Sessioni juaj mbaron edhe : {sessionTime}
+                  </span>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-2 rounded-md text-base font-medium text-white hover:bg-red-500 hover:text-white transition"
+                >
+                  Logout
+                </button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -72,16 +123,37 @@ function Navbar() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-gray-800 px-2 pt-2 pb-3 space-y-1">
+        <div className="md:hidden bg-green-600 px-2 pt-2 pb-3 space-y-1">
           <Link to="/" className={linkClass("/")}>
             Home
           </Link>
-          <Link to="/register" className={linkClass("/register")}>
-            Register
-          </Link>
-          <Link to="/login" className={linkClass("/login")}>
-            Login
-          </Link>
+          {!isLoggedIn ? (
+            <>
+              <Link to="/register" className={linkClass("/register")}>
+                Register
+              </Link>
+              <Link to="/login" className={linkClass("/login")}>
+                Login
+              </Link>
+            </>
+          ) : (
+            <>
+              <div className="block px-3 py-2 text-base font-medium text-white">
+                Welcome, {user?.name || "User"}
+              </div>
+              {sessionTime && (
+                <div className="block px-3 py-2 text-sm font-semibold text-black-500">
+                  Sessioni juaj mbaron edhe : {sessionTime}
+                </div>
+              )}
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-white hover:bg-red-500 transition"
+              >
+                Logout
+              </button>
+            </>
+          )}
         </div>
       )}
     </nav>

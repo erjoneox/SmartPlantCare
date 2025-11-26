@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { register } from "../services/authService";
+import VideoBackground from "../components/VideoBackground";
 
 function RegisterForm() {
   const [form, setForm] = useState({
@@ -29,50 +30,69 @@ function RegisterForm() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 border rounded shadow">
-      <h2 className="text-2xl font-bold mb-4">Register</h2>
-      {error && <p className="text-red-500 mb-2">{error}</p>}
-      {success && <p className="text-green-500 mb-2">{success}</p>}
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="name"
-          placeholder="Name"
-          value={form.name}
-          onChange={handleChange}
-          required
-          className="w-full mb-3 px-3 py-2 border rounded"
-        />
+    <VideoBackground>
+      // Modernized Register Form
+      <div className="max-w-md mx-auto mt-10 p-8 border rounded-xl shadow-lg bg-white">
+        <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
+          Create Account
+        </h2>
+        {error && (
+          <p className="text-red-500 mb-4 text-center bg-red-50 p-2 rounded">
+            {error}
+          </p>
+        )}
+        {success && (
+          <p className="text-green-500 mb-4 text-center bg-green-50 p-2 rounded">
+            {success}
+          </p>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              value={form.name}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            />
+          </div>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          required
-          className="w-full mb-3 px-3 py-2 border rounded"
-        />
+          <div className="relative">
+            <input
+              type="email"
+              name="email"
+              placeholder="Email Address"
+              value={form.email}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            />
+          </div>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          required
-          className="w-full mb-3 px-3 py-2 border rounded"
-        />
+          <div className="relative">
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            />
+          </div>
 
-        {/* Role input hidden or selectable - default "user" */}
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-        >
-          Register
-        </button>
-      </form>
-    </div>
+          {/*default "user */}
+          <button
+            type="submit"
+            className="w-full bg-linear-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition font-semibold shadow-md"
+          >
+            Register
+          </button>
+        </form>
+      </div>
+    </VideoBackground>
   );
 }
 
