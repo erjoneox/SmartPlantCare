@@ -31,7 +31,6 @@ function RegisterForm() {
 
   return (
     <VideoBackground>
-      // Modernized Register Form
       <div className="max-w-md mx-auto mt-10 p-8 border rounded-xl shadow-lg bg-white">
         <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
           Create Account
@@ -55,7 +54,7 @@ function RegisterForm() {
               value={form.name}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
             />
           </div>
 
@@ -67,7 +66,7 @@ function RegisterForm() {
               value={form.email}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
             />
           </div>
 
@@ -79,14 +78,14 @@ function RegisterForm() {
               value={form.password}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
             />
           </div>
 
           {/*default "user */}
           <button
             type="submit"
-            className="w-full bg-linear-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition font-semibold shadow-md"
+            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-800 transition font-semibold shadow-md cursor-pointer"
           >
             Register
           </button>
