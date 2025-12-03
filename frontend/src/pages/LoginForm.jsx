@@ -28,9 +28,9 @@ function LoginForm() {
       const response = await login(form.email, form.password);
       if (response.token) {
         const userData = {
-          id: response.userId,
-          email: response.email,
-          name: response.name,
+          id: response.user.userId,
+          email: response.user.email,
+          name: response.user.name,
         };
         contextLogin(userData, response.token);
         setSuccess("Login successful!");

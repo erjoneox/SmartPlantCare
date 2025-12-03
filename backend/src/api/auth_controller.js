@@ -13,14 +13,12 @@ class AuthController {
       }
 
       const user = await authService.register(name, email, password, role);
-      res
-        .status(201)
-        .json({
-          userId: user.userId,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        });
+      res.status(201).json({
+        userId: user.userId,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }

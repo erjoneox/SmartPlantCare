@@ -1,11 +1,12 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import { SessionProvider } from "./services/SessionContext";
+import { SessionProvider } from "./services/SessionContext.jsx";
 import Navbar from "./components/Navbar.jsx";
 import LandingPage from "./components/LandingPage.jsx";
-import RegisterForm from "./components/RegisterForm.jsx";
-import LoginForm from "./components/LoginForm.jsx";
+import RegisterForm from "./pages/RegisterForm.jsx";
+import LoginForm from "./pages/LoginForm.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
 import "./index.css";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/register" element={<RegisterForm />} />
             <Route path="/login" element={<LoginForm />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </div>
       </Router>
