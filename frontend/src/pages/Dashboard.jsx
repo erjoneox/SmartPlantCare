@@ -99,17 +99,24 @@ function Dashboard() {
         return;
       }
 
-      await plantAPI.createPlant(selectedRoom.roomId, {
-        name: plantForm.name,
-        type: plantForm.type,
-        waterFrequency: parseInt(plantForm.waterFrequency),
-        waterAlert: plantForm.waterAlert,
-        imageUrl: plantForm.imageUrl || null,
-        bloomingSeason: plantForm.bloomingSeason || null,
-        fragranceLevel: plantForm.fragranceLevel || null,
-        harvestMonth: plantForm.harvestMonth || null,
-        leafColor: plantForm.leafColor || null,
-      });
+      const formData = new FormData();
+
+        formData.append("roomId", selectedRoom.roomId);
+        formData.append("name", plantForm.name); 
+        formData.append("type", plantForm.type);
+        formData.append("waterFrequency", plantForm.waterFrequency);
+        formData.append("waterAlert", plantForm.waterAlert);
+        formData.append("bloomingSeason", plantForm.bloomingSeason || "");
+        formData.append("fragranceLevel", plantForm.fragranceLevel || "");
+        formData.append("harvestMonth", plantForm.harvestMonth || "");
+        formData.append("leafColor", plantForm.leafColor || "");
+
+          if (plantForm.imageFile) {
+             formData.append("image", plantForm.imageFile);
+      }
+
+       await plantAPI.createPlant(formData);
+
 
       setSuccess("Plant added successfully!");
       setPlantForm({
@@ -501,20 +508,23 @@ function Dashboard() {
                 />
               </div>
 
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">
-                  Image URL (Optional)
-                </label>
-                <input
-                  type="url"
-                  value={plantForm.imageUrl}
-                  onChange={(e) =>
-                    setPlantForm({ ...plantForm, imageUrl: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  placeholder="https://example.com/plant.jpg"
-                />
-              </div>
+             <div>
+              <label className="block text-gray-700 font-semibold mb-2">
+               Plant Image
+              </label>
+  
+            <input
+                 type="file"
+                 accept="image/*"
+                 onChange={(e) =>
+                  setPlantForm({
+                 ...plantForm,
+                 imageFile: e.target.files[0],
+           })
+         }
+    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+  />
+</div>
 
               <div className="flex items-center">
                 <input
@@ -549,7 +559,7 @@ function Dashboard() {
             </form>
           </div>
         </div>
-      )}
+      )} 
     </div>
   );
 }
