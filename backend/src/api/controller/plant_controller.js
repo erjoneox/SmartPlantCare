@@ -15,12 +15,13 @@ class PlantController {
         type,
         waterFrequency,
         waterAlert,
-        imageUrl,
         bloomingSeason,
         fragranceLevel,
         harvestMonth,
         leafColor,
-      } = req.body;
+      } = req.body; 
+
+      const imageUrl = req.file ? req.file.path : req.body.imageUrl;
 
       // Validate required fields
       if (!name || !type || !waterFrequency) {
@@ -34,6 +35,21 @@ class PlantController {
       if (!room) {
         return res.status(403).json({ error: "Unauthorized" });
       }
+
+      const multer = require("multer");
+
+// storage për imazhe
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // folder ku do ruhen imazhet
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
+
 
       const plant = await plantService.addPlant(roomId, {
         name,

@@ -7,7 +7,8 @@ class PlantRepository {
     waterFrequency,
     waterAlert = true,
     imageUrl = null
-  ) {
+  ) 
+  {
     const pool = await poolPromise;
     const result = await pool
       .request()
@@ -22,7 +23,6 @@ class PlantRepository {
       `);
     return result.recordset[0];
   }
-
   async getPlantsByRoomId(roomId) {
     const pool = await poolPromise;
     const result = await pool.request().input("roomId", sql.Int, roomId).query(`

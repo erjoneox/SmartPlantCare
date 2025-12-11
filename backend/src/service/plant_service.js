@@ -24,7 +24,7 @@ class PlantService {
     }
 
     // Create the plant record
-    const plant = await this.plantRepository.createPlant(
+     const plant = await this.plantRepository.createPlant(
       roomId,
       name,
       waterFrequency,
@@ -32,27 +32,20 @@ class PlantService {
       imageUrl
     );
 
-    // Create type-specific records
-    try {
-      if (type === "Flower" && bloomingSeason) {
-        await this.plantRepository.createFlower(
-          plant.plantId,
-          bloomingSeason,
-          fragranceLevel
-        );
-      } else if (type === "Fruit" && harvestMonth) {
-        await this.plantRepository.createFruit(plant.plantId, harvestMonth);
-      } else if (type === "Decorative" && leafColor) {
-        await this.plantRepository.createDecorate(plant.plantId, leafColor);
-      }
-    } catch (error) {
-      // Log the error but don't fail - plant was created successfully
-      console.error("Error creating type-specific record:", error);
+    // Optional type
+    if (type === "Flower" && bloomingSeason) {
+      await this.plantRepository.createFlower(plant.plantId, bloomingSeason, fragranceLevel);
+    } else if (type === "Fruit" && harvestMonth) {
+      await this.plantRepository.createFruit(plant.plantId, harvestMonth);
+    } else if (type === "Decorative" && leafColor) {
+      await this.plantRepository.createDecorate(plant.plantId, leafColor);
     }
 
     await this.roomRepository.updatePlantCount(roomId);
+
     return plant;
   }
+
 
   async getPlants(roomId) {
     if (!roomId) {

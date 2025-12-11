@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { SessionContext } from "../services/SessionContext";
 import { roomAPI, plantAPI } from "../services/roomService";
 
-function Dashboard() {
+function Dashboard() { 
   const { user, isLoggedIn } = useContext(SessionContext);
   const navigate = useNavigate();
 
@@ -21,7 +21,7 @@ function Dashboard() {
     type: "",
     waterFrequency: "",
     waterAlert: true,
-    imageUrl: "",
+    imageFile: null,
     bloomingSeason: "",
     fragranceLevel: "",
     harvestMonth: "",
@@ -98,23 +98,22 @@ function Dashboard() {
         setLoading(false);
         return;
       }
-
       const formData = new FormData();
 
-        formData.append("roomId", selectedRoom.roomId);
-        formData.append("name", plantForm.name); 
-        formData.append("type", plantForm.type);
-        formData.append("waterFrequency", plantForm.waterFrequency);
-        formData.append("waterAlert", plantForm.waterAlert);
-        formData.append("bloomingSeason", plantForm.bloomingSeason || "");
-        formData.append("fragranceLevel", plantForm.fragranceLevel || "");
-        formData.append("harvestMonth", plantForm.harvestMonth || "");
-        formData.append("leafColor", plantForm.leafColor || "");
+          formData.append("roomId", selectedRoom.roomId);
+          formData.append("name", plantForm.name);
+          formData.append("type", plantForm.type);
+          formData.append("waterFrequency", plantForm.waterFrequency);
+          formData.append("waterAlert", plantForm.waterAlert ? "true" : "false");
 
-          if (plantForm.imageFile) {
-             formData.append("image", plantForm.imageFile);
-      }
+          formData.append("bloomingSeason", plantForm.bloomingSeason || "");
+          formData.append("fragranceLevel", plantForm.fragranceLevel || "");
+          formData.append("harvestMonth", plantForm.harvestMonth || "");
+          formData.append("leafColor", plantForm.leafColor || "");
 
+              if (plantForm.imageFile) {
+              formData.append("image", plantForm.imageFile);
+    }
        await plantAPI.createPlant(formData);
 
 
@@ -124,7 +123,6 @@ function Dashboard() {
         type: "",
         waterFrequency: "",
         waterAlert: true,
-        imageUrl: "",
         bloomingSeason: "",
         fragranceLevel: "",
         harvestMonth: "",

@@ -7,4 +7,7 @@ router.post("/register", (req, res, next) =>
 );
 router.post("/login", (req, res, next) => AuthController.login(req, res, next));
 
+router.post("/plants", upload.single("image"), PlantController.addPlant);
+
+
 module.exports = router;
