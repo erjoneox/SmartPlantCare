@@ -2,10 +2,36 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SessionContext } from "../services/SessionContext";
 import { roomAPI, plantAPI } from "../services/roomService";
+import { useEffect } from "react";
+import { notificationAPI } from "../services/notificationService";
 
 function Dashboard() { 
   const { user, isLoggedIn } = useContext(SessionContext);
   const navigate = useNavigate();
+
+  seEffect(() => {
+  const checkWatering = async () => {
+    try {
+      const plantsToWater = await notificationAPI.getPlantsToWater();
+      plantsToWater.forEach((plant) => {
+        new Notification(`Water your plant: ${plant.name}`, {
+          body: `It's time to water ${plant.name}! 🌱`,
+        });
+      });
+    } catch (err) {
+      console.error("Failed to fetch watering notifications", err);
+    }
+  };
+
+  // Kërkon leje për notifikime
+  if (Notification.permission !== "granted") {
+    Notification.requestPermission();
+  }
+
+  checkWatering();
+  const interval = setInterval(checkWatering, 6 * 60 * 60 * 1000); // kontrollo çdo 6 ore
+  return () => clearInterval(interval);
+}, []);
 
   // Room state
   const [rooms, setRooms] = useState([]);

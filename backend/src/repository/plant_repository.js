@@ -23,6 +23,17 @@ class PlantRepository {
       `);
     return result.recordset[0];
   }
+
+  async getPlantsToWater(userId) {
+  const query = `
+    SELECT p.*, r.userId
+    FROM plants p
+    JOIN rooms r ON p.roomId = r.roomId
+    WHERE r.userId = ? AND DATEDIFF(NOW(), p.lastWatered) >= 3
+  `;
+  const [rows] = await this.db.execute(query, [userId]);
+  return rows;
+}
   async getPlantsByRoomId(roomId) {
     const pool = await poolPromise;
     const result = await pool.request().input("roomId", sql.Int, roomId).query(`
