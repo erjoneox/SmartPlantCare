@@ -6,7 +6,41 @@ const authController = require("./src/api/controller/auth_controller");
 const roomController = require("./src/api/controller/room_controller");
 const plantController = require("./src/api/controller/plant_controller");
 const plantRoutes = require("./src/api/routes/plantRoutes");
+const cron = require("node-cron");
+const PlantRepository = require("./repository/plant_repository");
+const UserRepository = require("./repository/user_repository"); // për email të përdoruesit
+const { sendWateringNotification } = require("./service/emailService");
 
+const plantRepository = new PlantRepository();
+const userRepository = new UserRepository();
+
+// Cron job që ekzekutohet çdo ditë në ora 08:00
+cron.schedule("0 8 * * *", async () => {
+  console.log("Checking plants for watering...");
+    try {
+    const plants = await plantRepository.getAllPlants();
+
+    const today = new Date();
+
+    for (const plant of plants) {
+      const lastWatered = new Date(plant.lastWatered);
+      const diffTime = Math.abs(today - lastWatered);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      // Kontrollo nëse kanë kaluar 3 ditë
+      if (diffDays % 3 === 0) {
+        // Merr emailin e përdoruesit
+        const user = await userRepository.getUserById(plant.userId);
+
+        if (user && user.email) {
+          await sendWateringNotification(user.email, plant.name);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Error sending watering notifications:", err);
+  }
+});
 
 const app = express();
 
