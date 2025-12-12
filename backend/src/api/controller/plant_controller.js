@@ -19,38 +19,25 @@ class PlantController {
         fragranceLevel,
         harvestMonth,
         leafColor,
-      } = req.body; 
+      } = req.body;
 
-      const imageUrl = req.file ? req.file.path : req.body.imageUrl;
+      // Merr path-in e fotos nese ekziston
+      const imageUrl = req.file ? req.file.path : null;
 
-      // Validate required fields
+      // Validime bazë
       if (!name || !type || !waterFrequency) {
         return res
           .status(400)
           .json({ error: "Name, type, and waterFrequency are required" });
       }
 
-      // Verify room belongs to user
+      // Siguro që dhoma i përket userit
       const room = await roomRepository.getRoomById(roomId, req.userId);
       if (!room) {
         return res.status(403).json({ error: "Unauthorized" });
       }
 
-      const multer = require("multer");
-
-// storage për imazhe
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/"); // folder ku do ruhen imazhet
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
-const upload = multer({ storage: storage });
-
-
+      // Krijo bimen
       const plant = await plantService.addPlant(roomId, {
         name,
         type,
@@ -62,9 +49,10 @@ const upload = multer({ storage: storage });
         harvestMonth,
         leafColor,
       });
-      res.status(201).json(plant);
+
+      return res.status(201).json(plant);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: error.message });
     }
   }
 
@@ -72,7 +60,6 @@ const upload = multer({ storage: storage });
     try {
       const { roomId } = req.params;
 
-      // Verify room belongs to user
       const room = await roomRepository.getRoomById(
         parseInt(roomId),
         req.userId
@@ -82,9 +69,9 @@ const upload = multer({ storage: storage });
       }
 
       const plants = await plantService.getPlants(parseInt(roomId));
-      res.json(plants);
+      return res.json(plants);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: error.message });
     }
   }
 
@@ -92,17 +79,19 @@ const upload = multer({ storage: storage });
     try {
       const { plantId } = req.params;
       const plant = await plantService.getPlant(parseInt(plantId));
-      res.json(plant);
+
+      return res.json(plant);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: error.message });
     }
   }
 
   async updatePlant(req, res) {
     try {
       const { plantId } = req.params;
-      const { name, waterFrequency, waterAlert, imageUrl, sunLightTimer } =
-        req.body;
+      const { name, waterFrequency, waterAlert, sunLightTimer } = req.body;
+
+      const imageUrl = req.file ? req.file.path : null;
 
       await plantService.updatePlant(
         parseInt(plantId),
@@ -112,9 +101,10 @@ const upload = multer({ storage: storage });
         imageUrl,
         sunLightTimer
       );
-      res.json({ message: "Plant updated successfully" });
+
+      return res.json({ message: "Plant updated successfully" });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: error.message });
     }
   }
 
@@ -123,16 +113,16 @@ const upload = multer({ storage: storage });
       const { plantId } = req.params;
       const { roomId } = req.body;
 
-      // Verify room belongs to user
       const room = await roomRepository.getRoomById(roomId, req.userId);
       if (!room) {
         return res.status(403).json({ error: "Unauthorized" });
       }
 
       await plantService.deletePlant(parseInt(plantId), roomId);
-      res.json({ message: "Plant deleted successfully" });
+
+      return res.json({ message: "Plant deleted successfully" });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: error.message });
     }
   }
 
@@ -146,9 +136,10 @@ const upload = multer({ storage: storage });
         startTime,
         endTime
       );
-      res.json({ message: "Sunlight timer updated" });
+
+      return res.json({ message: "Sunlight timer updated" });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: error.message });
     }
   }
 }

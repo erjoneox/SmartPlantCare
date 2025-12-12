@@ -5,11 +5,13 @@ const jwt = require("jsonwebtoken");
 const authController = require("./src/api/controller/auth_controller");
 const roomController = require("./src/api/controller/room_controller");
 const plantController = require("./src/api/controller/plant_controller");
+const plantRoutes = require("./src/api/routes/plantRoutes");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/api", plantRoutes);
 
 // per me bo verify JWT token
 const verifyToken = (req, res, next) => {
