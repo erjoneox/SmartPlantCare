@@ -17,6 +17,7 @@
     "module": "^2.0.0",
     "mssql": "^12.1.0",
     "multer": "^2.0.2",
-    "node-cron": "^4.2.1"
+    "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.11"
   }
 }
