@@ -66,7 +66,6 @@ class PlantService {
         );
       } catch (error) {
         console.error("Error scheduling water alert:", error);
-        // Don't fail the plant creation if alert scheduling fails
       }
     }
 
@@ -90,7 +89,6 @@ class PlantService {
         clearInterval(this.waterAlertIntervals[plantId]);
       }
 
-      // Set interval to send email every waterFrequency days
       this.waterAlertIntervals[plantId] = setInterval(async () => {
         try {
           await sendWateringNotification(user.email, plantName);

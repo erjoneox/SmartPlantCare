@@ -4,33 +4,33 @@ import { SessionContext } from "../services/SessionContext";
 import { roomAPI, plantAPI } from "../services/roomService";
 import { notificationAPI } from "../services/notificationService";
 
-function Dashboard() { 
+function Dashboard() {
   const { user, isLoggedIn } = useContext(SessionContext);
   const navigate = useNavigate();
 
   useEffect(() => {
-  const checkWatering = async () => {
-    try {
-      const plantsToWater = await notificationAPI.getPlantsToWater();
-      plantsToWater.forEach((plant) => {
-        new Notification(`Water your plant: ${plant.name}`, {
-          body: `It's time to water ${plant.name}! 🌱`,
+    const checkWatering = async () => {
+      try {
+        const plantsToWater = await notificationAPI.getPlantsToWater();
+        plantsToWater.forEach((plant) => {
+          new Notification(`Water your plant: ${plant.name}`, {
+            body: `It's time to water ${plant.name}! 🌱`,
+          });
         });
-      });
-    } catch (err) {
-      console.error("Failed to fetch watering notifications", err);
+      } catch (err) {
+        console.error("Failed to fetch watering notifications", err);
+      }
+    };
+
+    // Kërkon leje për notifikime
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission();
     }
-  };
 
-  // Kërkon leje për notifikime
-  if (Notification.permission !== "granted") {
-    Notification.requestPermission();
-  }
-
-  checkWatering();
-  const interval = setInterval(checkWatering, 6 * 60 * 60 * 1000); // kontrollo çdo 6 ore
-  return () => clearInterval(interval);
-}, []);
+    checkWatering();
+    const interval = setInterval(checkWatering, 6 * 60 * 60 * 1000); // kontrollo çdo 6 ore
+    return () => clearInterval(interval);
+  }, []);
 
   // Room state
   const [rooms, setRooms] = useState([]);
@@ -543,23 +543,23 @@ function Dashboard() {
                 />
               </div>
 
-             <div>
-              <label className="block text-gray-700 font-semibold mb-2">
-               Plant Image
-              </label>
-  
-            <input
-                 type="file"
-                 accept="image/*"
-                 onChange={(e) =>
-                  setPlantForm({
-                 ...plantForm,
-                 imageFile: e.target.files[0],
-           })
-         }
-    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-  />
-</div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Plant Image
+                </label>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setPlantForm({
+                      ...plantForm,
+                      imageFile: e.target.files[0],
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
+              </div>
 
               <div className="flex items-center">
                 <input
@@ -594,7 +594,7 @@ function Dashboard() {
             </form>
           </div>
         </div>
-      )} 
+      )}
     </div>
   );
 }

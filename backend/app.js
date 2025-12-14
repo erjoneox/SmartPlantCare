@@ -17,7 +17,7 @@ const userRepository = new UserRepository();
 // Cron job që ekzekutohet çdo ditë në ora 08:00
 cron.schedule("0 8 * * *", async () => {
   console.log("Checking plants for watering...");
-    try {
+  try {
     const plants = await plantRepository.getAllPlants();
 
     const today = new Date();

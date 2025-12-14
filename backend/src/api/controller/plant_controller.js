@@ -6,7 +6,11 @@ const PlantService = require("../../service/plant_service");
 const plantRepository = new PlantRepository();
 const roomRepository = new RoomRepository();
 const userRepository = new UserRepository();
-const plantService = new PlantService(plantRepository, roomRepository, userRepository);
+const plantService = new PlantService(
+  plantRepository,
+  roomRepository,
+  userRepository
+);
 
 class PlantController {
   async addPlant(req, res) {
