@@ -7,9 +7,9 @@ const roomController = require("./src/api/controller/room_controller");
 const plantController = require("./src/api/controller/plant_controller");
 const plantRoutes = require("./src/api/routes/plantRoutes");
 const cron = require("node-cron");
-const PlantRepository = require("./repository/plant_repository");
-const UserRepository = require("./repository/user_repository"); // për email të përdoruesit
-const { sendWateringNotification } = require("./service/emailService");
+const PlantRepository = require("./src/repository/plant_repository");
+const UserRepository = require("./src/repository/user_repository");
+const { sendWateringNotification } = require("./src/service/email_service");
 
 const plantRepository = new PlantRepository();
 const userRepository = new UserRepository();

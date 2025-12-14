@@ -2,14 +2,13 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SessionContext } from "../services/SessionContext";
 import { roomAPI, plantAPI } from "../services/roomService";
-import { useEffect } from "react";
 import { notificationAPI } from "../services/notificationService";
 
 function Dashboard() { 
   const { user, isLoggedIn } = useContext(SessionContext);
   const navigate = useNavigate();
 
-  seEffect(() => {
+  useEffect(() => {
   const checkWatering = async () => {
     try {
       const plantsToWater = await notificationAPI.getPlantsToWater();
@@ -124,24 +123,18 @@ function Dashboard() {
         setLoading(false);
         return;
       }
-      const formData = new FormData();
 
-          formData.append("roomId", selectedRoom.roomId);
-          formData.append("name", plantForm.name);
-          formData.append("type", plantForm.type);
-          formData.append("waterFrequency", plantForm.waterFrequency);
-          formData.append("waterAlert", plantForm.waterAlert ? "true" : "false");
-
-          formData.append("bloomingSeason", plantForm.bloomingSeason || "");
-          formData.append("fragranceLevel", plantForm.fragranceLevel || "");
-          formData.append("harvestMonth", plantForm.harvestMonth || "");
-          formData.append("leafColor", plantForm.leafColor || "");
-
-              if (plantForm.imageFile) {
-              formData.append("image", plantForm.imageFile);
-    }
-       await plantAPI.createPlant(formData);
-
+      await plantAPI.createPlant(selectedRoom.roomId, {
+        name: plantForm.name,
+        type: plantForm.type,
+        waterFrequency: parseInt(plantForm.waterFrequency),
+        waterAlert: plantForm.waterAlert,
+        imageUrl: plantForm.imageFile ? plantForm.imageFile.name : null,
+        bloomingSeason: plantForm.bloomingSeason || null,
+        fragranceLevel: plantForm.fragranceLevel || null,
+        harvestMonth: plantForm.harvestMonth || null,
+        leafColor: plantForm.leafColor || null,
+      });
 
       setSuccess("Plant added successfully!");
       setPlantForm({
@@ -149,6 +142,7 @@ function Dashboard() {
         type: "",
         waterFrequency: "",
         waterAlert: true,
+        imageFile: null,
         bloomingSeason: "",
         fragranceLevel: "",
         harvestMonth: "",
@@ -158,6 +152,7 @@ function Dashboard() {
       fetchRooms();
     } catch (err) {
       setError(err.response?.data?.error || "Failed to add plant");
+      console.error("Add plant error:", err);
     } finally {
       setLoading(false);
     }
@@ -384,6 +379,22 @@ function Dashboard() {
             <form onSubmit={handleAddPlant} className="space-y-4">
               <div>
                 <label className="block text-gray-700 font-semibold mb-2">
+                  Plant Name
+                </label>
+                <input
+                  type="text"
+                  value={plantForm.name}
+                  onChange={(e) =>
+                    setPlantForm({ ...plantForm, name: e.target.value })
+                  }
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                  placeholder="e.g., Rose, Tomato, Fern"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">
                   Plant Type
                 </label>
                 <select
@@ -395,13 +406,13 @@ function Dashboard() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
                 >
                   <option value="">Select type</option>
-                  <option value="flower">Flower</option>
-                  <option value="fruit">Fruit</option>
-                  <option value="decorative">Decorative</option>
+                  <option value="Flower">Flower</option>
+                  <option value="Fruit">Fruit</option>
+                  <option value="Decorative">Decorative</option>
                 </select>
               </div>
 
-              {plantForm.type === "flower" && (
+              {plantForm.type === "Flower" && (
                 <>
                   <div>
                     <label className="block text-gray-700 font-semibold mb-2">
@@ -449,7 +460,7 @@ function Dashboard() {
                 </>
               )}
 
-              {plantForm.type === "fruit" && (
+              {plantForm.type === "Fruit" && (
                 <div>
                   <label className="block text-gray-700 font-semibold mb-2">
                     Harvest Month
@@ -485,7 +496,7 @@ function Dashboard() {
                 </div>
               )}
 
-              {plantForm.type === "decorative" && (
+              {plantForm.type === "Decorative" && (
                 <div>
                   <label className="block text-gray-700 font-semibold mb-2">
                     Leaf Color

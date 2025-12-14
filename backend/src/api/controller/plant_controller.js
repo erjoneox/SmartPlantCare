@@ -1,10 +1,12 @@
 const PlantRepository = require("../../repository/plant_repository");
 const RoomRepository = require("../../repository/room_repository");
+const UserRepository = require("../../repository/user_repository");
 const PlantService = require("../../service/plant_service");
 
 const plantRepository = new PlantRepository();
 const roomRepository = new RoomRepository();
-const plantService = new PlantService(plantRepository, roomRepository);
+const userRepository = new UserRepository();
+const plantService = new PlantService(plantRepository, roomRepository, userRepository);
 
 class PlantController {
   async addPlant(req, res) {
@@ -21,34 +23,35 @@ class PlantController {
         leafColor,
       } = req.body;
 
-      // Merr path-in e fotos nese ekziston
-      const imageUrl = req.file ? req.file.path : null;
-
-      // Validime bazë
+      // Validate required fields
       if (!name || !type || !waterFrequency) {
         return res
           .status(400)
           .json({ error: "Name, type, and waterFrequency are required" });
       }
 
-      // Siguro që dhoma i përket userit
+      // Verify room belongs to user
       const room = await roomRepository.getRoomById(roomId, req.userId);
       if (!room) {
         return res.status(403).json({ error: "Unauthorized" });
       }
 
-      // Krijo bimen
-      const plant = await plantService.addPlant(roomId, {
-        name,
-        type,
-        waterFrequency,
-        waterAlert,
-        imageUrl,
-        bloomingSeason,
-        fragranceLevel,
-        harvestMonth,
-        leafColor,
-      });
+      // Create plant with water alert scheduling
+      const plant = await plantService.addPlant(
+        roomId,
+        {
+          name,
+          type,
+          waterFrequency,
+          waterAlert,
+          imageUrl: null,
+          bloomingSeason,
+          fragranceLevel,
+          harvestMonth,
+          leafColor,
+        },
+        req.userId
+      );
 
       return res.status(201).json(plant);
     } catch (error) {

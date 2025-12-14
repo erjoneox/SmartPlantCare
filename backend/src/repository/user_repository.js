@@ -35,6 +35,25 @@ class UserRepository {
     const row = result.recordset[0];
     return new User(row.userId, row.name, row.email, row.password, row.role);
   }
+
+  async getUserById(userId) {
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("userId", sql.Int, userId)
+      .query(
+        `SELECT userId, name, email, password, role FROM [User] WHERE userId = @userId`
+      );
+    if (result.recordset.length === 0) return null;
+    const userRow = result.recordset[0];
+    return new User(
+      userRow.userId,
+      userRow.name,
+      userRow.email,
+      userRow.password,
+      userRow.role
+    );
+  }
 }
 
 module.exports = UserRepository;
