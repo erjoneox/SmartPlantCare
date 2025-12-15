@@ -41,6 +41,7 @@ function Dashboard() {
   const [showPlantModal, setShowPlantModal] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [plants, setPlants] = useState({});
+  const [editingPlantId, setEditingPlantId] = useState(null);
   const [plantForm, setPlantForm] = useState({
     name: "",
     type: "",
@@ -124,17 +125,35 @@ function Dashboard() {
         return;
       }
 
-      await plantAPI.createPlant(selectedRoom.roomId, {
-        name: plantForm.name,
-        type: plantForm.type,
-        waterFrequency: parseInt(plantForm.waterFrequency),
-        waterAlert: plantForm.waterAlert,
-        imageUrl: plantForm.imageFile ? plantForm.imageFile.name : null,
-        bloomingSeason: plantForm.bloomingSeason || null,
-        fragranceLevel: plantForm.fragranceLevel || null,
-        harvestMonth: plantForm.harvestMonth || null,
-        leafColor: plantForm.leafColor || null,
-      });
+      if (editingPlantId) {
+        // Update existing plant
+        await plantAPI.updatePlant(editingPlantId, {
+          name: plantForm.name,
+          type: plantForm.type,
+          waterFrequency: parseInt(plantForm.waterFrequency),
+          waterAlert: plantForm.waterAlert,
+          imageUrl: plantForm.imageFile
+            ? plantForm.imageFile.name
+            : plantForm.imageUrl || null,
+          bloomingSeason: plantForm.bloomingSeason || null,
+          fragranceLevel: plantForm.fragranceLevel || null,
+          harvestMonth: plantForm.harvestMonth || null,
+          leafColor: plantForm.leafColor || null,
+        });
+      } else {
+        // Create new plant
+        await plantAPI.createPlant(selectedRoom.roomId, {
+          name: plantForm.name,
+          type: plantForm.type,
+          waterFrequency: parseInt(plantForm.waterFrequency),
+          waterAlert: plantForm.waterAlert,
+          imageUrl: plantForm.imageFile ? plantForm.imageFile.name : null,
+          bloomingSeason: plantForm.bloomingSeason || null,
+          fragranceLevel: plantForm.fragranceLevel || null,
+          harvestMonth: plantForm.harvestMonth || null,
+          leafColor: plantForm.leafColor || null,
+        });
+      }
 
       setSuccess("Plant added successfully!");
       setPlantForm({
@@ -149,6 +168,7 @@ function Dashboard() {
         leafColor: "",
       });
       setShowPlantModal(false);
+      setEditingPlantId(null);
       fetchRooms();
     } catch (err) {
       setError(err.response?.data?.error || "Failed to add plant");
@@ -170,8 +190,49 @@ function Dashboard() {
   };
 
   const openPlantModal = (room) => {
+    // default: open empty add modal for the room
     setSelectedRoom(room);
+    setEditingPlantId(null);
+    setPlantForm({
+      name: "",
+      type: "",
+      waterFrequency: "",
+      waterAlert: true,
+      imageFile: null,
+      imageUrl: null,
+      bloomingSeason: "",
+      fragranceLevel: "",
+      harvestMonth: "",
+      leafColor: "",
+    });
     setShowPlantModal(true);
+  };
+
+  const openEditPlantModal = async (room, plant) => {
+    setSelectedRoom(room);
+    setEditingPlantId(plant.plantId);
+    // fetch latest plant data
+    try {
+      const plantDetails = await plantAPI.getPlant(plant.plantId);
+      setPlantForm({
+        name: plantDetails.name || "",
+        type: plantDetails.type || plant.type || "",
+        waterFrequency: plantDetails.waterFrequency || "",
+        waterAlert:
+          typeof plantDetails.waterAlert === "boolean"
+            ? plantDetails.waterAlert
+            : true,
+        imageFile: null,
+        imageUrl: plantDetails.imageUrl || plant.imageUrl || null,
+        bloomingSeason: plantDetails.bloomingSeason || "",
+        fragranceLevel: plantDetails.fragranceLevel || "",
+        harvestMonth: plantDetails.harvestMonth || "",
+        leafColor: plantDetails.leafColor || "",
+      });
+      setShowPlantModal(true);
+    } catch (err) {
+      setError("Failed to load plant details");
+    }
   };
 
   if (!isLoggedIn) {
@@ -254,7 +315,8 @@ function Dashboard() {
                         {plants[room.roomId].map((plant) => (
                           <div
                             key={plant.plantId}
-                            className="flex items-center justify-between bg-gray-50 p-3 rounded-lg"
+                            onClick={() => openEditPlantModal(room, plant)}
+                            className="flex items-center justify-between bg-gray-50 p-3 rounded-lg cursor-pointer hover:bg-gray-100"
                           >
                             <div className="flex-1">
                               <p className="font-semibold text-gray-800">
@@ -263,11 +325,41 @@ function Dashboard() {
                               <p className="text-xs text-gray-500">
                                 Water: Every {plant.waterFrequency} days
                               </p>
+                              {plant.type && (
+                                <p className="text-xs text-gray-500">
+                                  Type: {plant.type}
+                                </p>
+                              )}
+                              {plant.type === "Flower" &&
+                                (plant.fragranceLevel ||
+                                  plant.bloomingSeasonId) && (
+                                  <p className="text-xs text-gray-500">
+                                    {plant.bloomingSeasonId
+                                      ? `Blooming: ${plant.bloomingSeasonId}`
+                                      : null}
+                                    {plant.fragranceLevel
+                                      ? ` • Fragrance: ${plant.fragranceLevel}`
+                                      : null}
+                                  </p>
+                                )}
+                              {plant.type === "Fruit" &&
+                                plant.harvestMonthId && (
+                                  <p className="text-xs text-gray-500">
+                                    Harvest: {plant.harvestMonthId}
+                                  </p>
+                                )}
+                              {plant.type === "Decorative" &&
+                                plant.leafColorId && (
+                                  <p className="text-xs text-gray-500">
+                                    Leaf Color ID: {plant.leafColorId}
+                                  </p>
+                                )}
                             </div>
                             <button
-                              onClick={() =>
-                                handleDeletePlant(plant.plantId, room.roomId)
-                              }
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeletePlant(plant.plantId, room.roomId);
+                              }}
                               className="text-red-500 hover:text-red-700 text-sm font-semibold ml-2 cursor-pointer"
                             >
                               ✕
@@ -370,7 +462,9 @@ function Dashboard() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              Add Plant to {selectedRoom.name}
+              {editingPlantId
+                ? `Edit Plant in ${selectedRoom.name}`
+                : `Add Plant to ${selectedRoom.name}`}
             </h2>
             <p className="text-gray-600 mb-6">
               Fill in the plant details below
@@ -588,7 +682,13 @@ function Dashboard() {
                   disabled={loading}
                   className="flex-1 bg-green-600 hover:green-700 text-white font-semibold py-2 px-4 rounded-lg transition disabled:opacity-50 cursor-pointer "
                 >
-                  {loading ? "Adding..." : "Add Plant"}
+                  {loading
+                    ? editingPlantId
+                      ? "Saving..."
+                      : "Adding..."
+                    : editingPlantId
+                    ? "Save Changes"
+                    : "Add Plant"}
                 </button>
               </div>
             </form>

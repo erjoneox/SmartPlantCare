@@ -6,10 +6,15 @@ const plantRepository = new PlantRepository();
 // GET /notifications/water
 router.get("/water", async (req, res) => {
   try {
-    const userId = req.userId; // sigurohu që ke middleware për auth
-    const plantsToWater = await plantRepository.getPlantsToWater(userId); // do krijojmë këtë funksion
-    res.json(plantsToWater);
+    const userId = req.userId; // ensure auth middleware provided userId
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const plantsToWater = await plantRepository.getPlantsToWater(userId);
+    return res.json(plantsToWater);
   } catch (error) {
+    console.error("Error in /notifications/water:", error);
     res.status(500).json({ error: error.message });
   }
 });

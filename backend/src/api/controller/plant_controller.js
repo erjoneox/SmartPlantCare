@@ -67,10 +67,20 @@ class PlantController {
     try {
       const { roomId } = req.params;
 
-      const room = await roomRepository.getRoomById(
-        parseInt(roomId),
+      const roomIdNum = parseInt(roomId);
+      if (isNaN(roomIdNum)) {
+        console.error("getPlants: invalid roomId param:", roomId);
+        return res.status(400).json({ error: "Invalid roomId" });
+      }
+
+      console.log(
+        "getPlants called with roomId:",
+        roomIdNum,
+        "userId:",
         req.userId
       );
+
+      const room = await roomRepository.getRoomById(roomIdNum, req.userId);
       if (!room) {
         return res.status(403).json({ error: "Unauthorized" });
       }
@@ -78,6 +88,7 @@ class PlantController {
       const plants = await plantService.getPlants(parseInt(roomId));
       return res.json(plants);
     } catch (error) {
+      console.error("Error in getPlants:", error);
       return res.status(400).json({ error: error.message });
     }
   }
@@ -96,17 +107,43 @@ class PlantController {
   async updatePlant(req, res) {
     try {
       const { plantId } = req.params;
-      const { name, waterFrequency, waterAlert, sunLightTimer } = req.body;
+      const {
+        name,
+        type,
+        waterFrequency,
+        waterAlert,
+        bloomingSeason,
+        fragranceLevel,
+        harvestMonth,
+        leafColor,
+      } = req.body;
 
       const imageUrl = req.file ? req.file.path : null;
 
+      // verify plant belongs to a room owned by user
+      const existingPlant = await plantService.getPlant(parseInt(plantId));
+      if (!existingPlant)
+        return res.status(404).json({ error: "Plant not found" });
+      const room = await roomRepository.getRoomById(
+        existingPlant.roomId,
+        req.userId
+      );
+      if (!room) return res.status(403).json({ error: "Unauthorized" });
+
       await plantService.updatePlant(
         parseInt(plantId),
-        name,
-        waterFrequency,
-        waterAlert,
-        imageUrl,
-        sunLightTimer
+        {
+          name,
+          type,
+          waterFrequency,
+          waterAlert,
+          imageUrl,
+          bloomingSeason,
+          fragranceLevel,
+          harvestMonth,
+          leafColor,
+        },
+        req.userId
       );
 
       return res.json({ message: "Plant updated successfully" });

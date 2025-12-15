@@ -6,6 +6,7 @@ const authController = require("./src/api/controller/auth_controller");
 const roomController = require("./src/api/controller/room_controller");
 const plantController = require("./src/api/controller/plant_controller");
 const plantRoutes = require("./src/api/routes/plantRoutes");
+const notificationRoutes = require("./src/api/routes/notificationRoutes");
 const cron = require("node-cron");
 const PlantRepository = require("./src/repository/plant_repository");
 const UserRepository = require("./src/repository/user_repository");
@@ -46,9 +47,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use("/api", plantRoutes);
-
-// per me bo verify JWT token
+// verifyToken middleware (used by many routes)
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
@@ -63,6 +62,9 @@ const verifyToken = (req, res, next) => {
     return res.status(401).json({ error: "Invalid or expired token" });
   }
 };
+
+app.use("/api", plantRoutes);
+app.use("/api/notifications", verifyToken, notificationRoutes);
 
 // Auth routes i lojm qitu niher
 app.post("/register", (req, res) => authController.register(req, res));

@@ -36,18 +36,56 @@ class PlantService {
       imageUrl
     );
 
-    // Create type-specific records
+    // Create type-specific records (coerce/map values to numeric IDs)
     try {
-      if (type === "Flower" && bloomingSeason) {
+      const seasonMap = { Spring: 1, Summer: 2, Autumn: 3, Fall: 3, Winter: 4 };
+      const monthMap = {
+        January: 1,
+        February: 2,
+        March: 3,
+        April: 4,
+        May: 5,
+        June: 6,
+        July: 7,
+        August: 8,
+        September: 9,
+        October: 10,
+        November: 11,
+        December: 12,
+      };
+      const leafColorMap = { Green: 1, Red: 2, Yellow: 3, Variegated: 4 };
+
+      const parseId = (val, map) => {
+        if (val === null || val === undefined) return null;
+        if (typeof val === "number") return val;
+        if (!isNaN(parseInt(val))) return parseInt(val);
+        if (map && map[val]) return map[val];
+        return null;
+      };
+
+      const seasonId = parseId(bloomingSeason, seasonMap);
+      const harvestMonthId = parseId(harvestMonth, monthMap);
+      const leafColorId = parseId(leafColor, leafColorMap);
+      const fragranceLevelVal =
+        fragranceLevel === null || fragranceLevel === undefined
+          ? null
+          : fragranceLevel;
+
+      if (type === "Flower" && seasonId) {
+        console.log("createFlower called with", {
+          plantId: plant.plantId,
+          seasonId,
+          fragranceLevel: fragranceLevelVal,
+        });
         await this.plantRepository.createFlower(
           plant.plantId,
-          bloomingSeason,
-          fragranceLevel
+          seasonId,
+          fragranceLevelVal
         );
-      } else if (type === "Fruit" && harvestMonth) {
-        await this.plantRepository.createFruit(plant.plantId, harvestMonth);
-      } else if (type === "Decorative" && leafColor) {
-        await this.plantRepository.createDecorate(plant.plantId, leafColor);
+      } else if (type === "Fruit" && harvestMonthId) {
+        await this.plantRepository.createFruit(plant.plantId, harvestMonthId);
+      } else if (type === "Decorative" && leafColorId) {
+        await this.plantRepository.createDecorate(plant.plantId, leafColorId);
       }
     } catch (error) {
       console.error("Error creating type-specific record:", error);
@@ -130,31 +168,135 @@ class PlantService {
     if (!plant) {
       throw new Error("Plant not found");
     }
+
+    // fetch type-specific details if present
+    try {
+      if (plant.type === "Flower") {
+        const flower = await this.plantRepository.getFlowerByPlantId(plantId);
+        if (flower) {
+          plant.bloomingSeason =
+            flower.seasonId ?? flower.bloomingSeasonId ?? null;
+          plant.fragranceLevel = flower.fragranceLevel ?? null;
+        }
+      } else if (plant.type === "Fruit") {
+        const fruit = await this.plantRepository.getFruitByPlantId(plantId);
+        if (fruit) {
+          plant.harvestMonth = fruit.monthId ?? fruit.harvestMonthId ?? null;
+        }
+      } else if (plant.type === "Decorative") {
+        const deco = await this.plantRepository.getDecorativeByPlantId(plantId);
+        if (deco) {
+          plant.leafColor = deco.leafColorId ?? null;
+        }
+      }
+    } catch (err) {
+      console.error(
+        "Error fetching type-specific details for plant",
+        plantId,
+        err
+      );
+    }
+
     return plant;
   }
 
-  async updatePlant(
-    plantId,
-    name,
-    waterFrequency,
-    waterAlert,
-    imageUrl = null,
-    sunLightTimer = null
-  ) {
+  async updatePlant(plantId, plantData, userId = null) {
+    const {
+      name,
+      type,
+      waterFrequency,
+      waterAlert = true,
+      imageUrl = null,
+      bloomingSeason = null,
+      fragranceLevel = null,
+      harvestMonth = null,
+      leafColor = null,
+    } = plantData;
+
     if (!plantId || !name || waterFrequency === undefined) {
       throw new Error("Plant ID, name, and water frequency are required");
     }
+
     const success = await this.plantRepository.updatePlant(
       plantId,
       name,
       waterFrequency,
       waterAlert,
-      imageUrl,
-      sunLightTimer
+      imageUrl
     );
+
     if (!success) {
       throw new Error("Failed to update plant");
     }
+
+    // Remove existing type-specific records and recreate based on provided type
+    try {
+      await this.plantRepository.deleteFlowerByPlantId(plantId);
+      await this.plantRepository.deleteFruitByPlantId(plantId);
+      await this.plantRepository.deleteDecorativeByPlantId(plantId);
+
+      const seasonMap = { Spring: 1, Summer: 2, Autumn: 3, Fall: 3, Winter: 4 };
+      const monthMap = {
+        January: 1,
+        February: 2,
+        March: 3,
+        April: 4,
+        May: 5,
+        June: 6,
+        July: 7,
+        August: 8,
+        September: 9,
+        October: 10,
+        November: 11,
+        December: 12,
+      };
+      const leafColorMap = { Green: 1, Red: 2, Yellow: 3, Variegated: 4 };
+
+      const parseId = (val, map) => {
+        if (val === null || val === undefined) return null;
+        if (typeof val === "number") return val;
+        if (!isNaN(parseInt(val))) return parseInt(val);
+        if (map && map[val]) return map[val];
+        return null;
+      };
+
+      const seasonId = parseId(bloomingSeason, seasonMap);
+      const harvestMonthId = parseId(harvestMonth, monthMap);
+      const leafColorId = parseId(leafColor, leafColorMap);
+      const fragranceLevelVal =
+        fragranceLevel === null || fragranceLevel === undefined
+          ? null
+          : fragranceLevel;
+
+      if (type === "Flower" && seasonId) {
+        console.log("update createFlower called with", {
+          plantId,
+          seasonId,
+          fragranceLevel: fragranceLevelVal,
+        });
+        await this.plantRepository.createFlower(
+          plantId,
+          seasonId,
+          fragranceLevelVal
+        );
+      } else if (type === "Fruit" && harvestMonthId) {
+        await this.plantRepository.createFruit(plantId, harvestMonthId);
+      } else if (type === "Decorative" && leafColorId) {
+        await this.plantRepository.createDecorate(plantId, leafColorId);
+      }
+    } catch (error) {
+      console.error("Error updating type-specific record:", error);
+    }
+
+    // Reschedule or clear water alerts
+    if (this.userRepository && userId) {
+      if (waterAlert) {
+        await this.scheduleWaterAlert(plantId, name, waterFrequency, userId);
+      } else {
+        this.clearWaterAlert(plantId);
+      }
+    }
+
     return success;
   }
 
