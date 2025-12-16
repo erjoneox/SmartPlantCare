@@ -108,127 +108,121 @@ class PlantRepository {
       `);
   }
 
-  async createFlower(plantId, bloomingSeasonId, fragranceLevel) {
+  async createFlower(plantId, bloomingSeasonId, fragranceLevel = null) {
     const pool = await poolPromise;
-    const attempts = [
-      // numeric season id
-      {
-        sql: `INSERT INTO Flower (plantId, seasonID) VALUES (@plantId, @seasonId)`,
-        params: { plantId, seasonId: bloomingSeasonId },
-      },
-      // season name (nvarchar)
-      {
-        sql: `INSERT INTO Flower (plantId, bloomingSeason) VALUES (@plantId, @seasonName)`,
-        params: { plantId, seasonName: bloomingSeasonId },
-      },
-    ];
 
-    for (const attempt of attempts) {
-      try {
-        const req = pool.request();
-        req.input("plantId", sql.Int, attempt.params.plantId);
-        if (
-          Object.prototype.hasOwnProperty.call(attempt.params, "seasonId") &&
-          attempt.params.seasonId !== null
-        ) {
-          req.input("seasonId", sql.Int, attempt.params.seasonId);
+    if (bloomingSeasonId === null || bloomingSeasonId === undefined) {
+      return false;
+    }
+
+    try {
+      const req = pool.request();
+      req.input("plantId", sql.Int, plantId);
+
+      // If numeric ID, use seasonID column; otherwise use bloomingSeason column
+      if (!isNaN(Number(bloomingSeasonId))) {
+        req.input("seasonId", sql.Int, bloomingSeasonId);
+        if (fragranceLevel !== null && fragranceLevel !== undefined) {
+          req.input("fragrance", sql.NVarChar, fragranceLevel);
+          const result = await req.query(
+            `INSERT INTO Flower (plantId, seasonID, fragranceLevel) VALUES (@plantId, @seasonId, @fragrance)`
+          );
+          if (result.rowsAffected[0] > 0) {
+            console.log(
+              `createFlower succeeded for plantId=${plantId} with seasonID=${bloomingSeasonId}, fragranceLevel=${fragranceLevel}`
+            );
+            return true;
+          }
+        } else {
+          const result = await req.query(
+            `INSERT INTO Flower (plantId, seasonID) VALUES (@plantId, @seasonId)`
+          );
+          if (result.rowsAffected[0] > 0) {
+            console.log(
+              `createFlower succeeded for plantId=${plantId} with seasonID=${bloomingSeasonId}`
+            );
+            return true;
+          }
         }
-        if (
-          Object.prototype.hasOwnProperty.call(attempt.params, "seasonName") &&
-          attempt.params.seasonName !== null
-        ) {
-          req.input("seasonName", sql.NVarChar, attempt.params.seasonName);
+      } else {
+        req.input("seasonName", sql.NVarChar, bloomingSeasonId);
+        if (fragranceLevel !== null && fragranceLevel !== undefined) {
+          req.input("fragrance", sql.NVarChar, fragranceLevel);
+          const result = await req.query(
+            `INSERT INTO Flower (plantId, bloomingSeason, fragranceLevel) VALUES (@plantId, @seasonName, @fragrance)`
+          );
+          if (result.rowsAffected[0] > 0) {
+            console.log(
+              `createFlower succeeded for plantId=${plantId} with bloomingSeason=${bloomingSeasonId}, fragranceLevel=${fragranceLevel}`
+            );
+            return true;
+          }
+        } else {
+          const result = await req.query(
+            `INSERT INTO Flower (plantId, bloomingSeason) VALUES (@plantId, @seasonName)`
+          );
+          if (result.rowsAffected[0] > 0) {
+            console.log(
+              `createFlower succeeded for plantId=${plantId} with bloomingSeason=${bloomingSeasonId}`
+            );
+            return true;
+          }
         }
-        const result = await req.query(attempt.sql);
-        if (result.rowsAffected[0] > 0) return true;
-      } catch (err) {
-        console.warn("createFlower attempt failed:", err.message);
       }
+    } catch (err) {
+      console.warn("createFlower failed:", err.message);
     }
     return false;
   }
 
   async createFruit(plantId, harvestMonthId) {
     const pool = await poolPromise;
-    const attempts = [
-      // numeric harvest month id
-      {
-        sql: `INSERT INTO Fruit (plantId, HarvestMonthID) VALUES (@plantId, @monthId)`,
-        params: { plantId, monthId: harvestMonthId },
-      },
-      // month name
-      {
-        sql: `INSERT INTO Fruit (plantId, harvestMonth) VALUES (@plantId, @monthName)`,
-        params: { plantId, monthName: harvestMonthId },
-      },
-    ];
 
-    for (const attempt of attempts) {
-      try {
-        const req = pool.request();
-        req.input("plantId", sql.Int, attempt.params.plantId);
-        if (
-          Object.prototype.hasOwnProperty.call(attempt.params, "monthId") &&
-          attempt.params.monthId !== null
-        ) {
-          req.input("monthId", sql.Int, attempt.params.monthId);
-        }
-        if (
-          Object.prototype.hasOwnProperty.call(attempt.params, "monthName") &&
-          attempt.params.monthName !== null
-        ) {
-          req.input("monthName", sql.NVarChar, attempt.params.monthName);
-        }
-        const result = await req.query(attempt.sql);
-        if (result.rowsAffected[0] > 0) return true;
-      } catch (err) {
-        console.warn("createFruit attempt failed:", err.message);
+    if (harvestMonthId === null || harvestMonthId === undefined) {
+      return false;
+    }
+
+    try {
+      const req = pool.request();
+      req.input("plantId", sql.Int, plantId);
+      req.input("monthId", sql.Int, harvestMonthId);
+      const result = await req.query(
+        `INSERT INTO Fruit (plantId, HarvestMonthID) VALUES (@plantId, @monthId)`
+      );
+      if (result.rowsAffected[0] > 0) {
+        console.log(
+          `createFruit succeeded for plantId=${plantId} with HarvestMonthID=${harvestMonthId}`
+        );
+        return true;
       }
+    } catch (err) {
+      console.warn("createFruit failed:", err.message);
     }
     return false;
   }
 
   async createDecorate(plantId, leafColorId) {
     const pool = await poolPromise;
-    const attempts = [
-      {
-        sql: `INSERT INTO Decorative (plantId, LeafColorID) VALUES (@plantId, @leafColorId)`,
-        params: { plantId, leafColorId },
-      },
-      {
-        sql: `INSERT INTO Decorative (plantId, leafColor) VALUES (@plantId, @leafColorName)`,
-        params: { plantId, leafColorName: leafColorId },
-      },
-    ];
 
-    for (const attempt of attempts) {
-      try {
-        const req = pool.request();
-        req.input("plantId", sql.Int, attempt.params.plantId);
-        if (
-          Object.prototype.hasOwnProperty.call(attempt.params, "leafColorId") &&
-          attempt.params.leafColorId !== null
-        ) {
-          req.input("leafColorId", sql.Int, attempt.params.leafColorId);
-        }
-        if (
-          Object.prototype.hasOwnProperty.call(
-            attempt.params,
-            "leafColorName"
-          ) &&
-          attempt.params.leafColorName !== null
-        ) {
-          req.input(
-            "leafColorName",
-            sql.NVarChar,
-            attempt.params.leafColorName
-          );
-        }
-        const result = await req.query(attempt.sql);
-        if (result.rowsAffected[0] > 0) return true;
-      } catch (err) {
-        console.warn("createDecorate attempt failed:", err.message);
+    if (leafColorId === null || leafColorId === undefined) {
+      return false;
+    }
+
+    try {
+      const req = pool.request();
+      req.input("plantId", sql.Int, plantId);
+      req.input("colorId", sql.Int, leafColorId);
+      const result = await req.query(
+        `INSERT INTO Decorative (plantId, LeafColorID) VALUES (@plantId, @colorId)`
+      );
+      if (result.rowsAffected[0] > 0) {
+        console.log(
+          `createDecorate succeeded for plantId=${plantId} with LeafColorID=${leafColorId}`
+        );
+        return true;
       }
+    } catch (err) {
+      console.warn("createDecorate failed:", err.message);
     }
     return false;
   }

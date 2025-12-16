@@ -14,9 +14,7 @@ router.get("/plants/:roomId", (req, res) =>
 );
 
 // Get single plant
-router.get("/plant/:plantId", (req, res) =>
-  plantController.getPlant(req, res)
-);
+router.get("/plant/:plantId", (req, res) => plantController.getPlant(req, res));
 
 // Update plant (with optional image)
 router.put("/plant/:plantId", upload.single("image"), (req, res) =>

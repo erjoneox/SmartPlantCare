@@ -8,6 +8,56 @@ function Dashboard() {
   const { user, isLoggedIn } = useContext(SessionContext);
   const navigate = useNavigate();
 
+  // Maps to convert between display names and DB IDs
+  const seasonMap = {
+    Spring: 1,
+    Summer: 2,
+    Fall: 3,
+    Autumn: 3,
+    Winter: 4,
+    "Spring/Summer": 5,
+    "Summer/Fall": 6,
+    "Fall/Winter": 7,
+    "Winter/Spring": 8,
+  };
+  const reverseSeasonMap = Object.fromEntries(
+    Object.entries(seasonMap).map(([k, v]) => [v, k])
+  );
+
+  const monthMap = {
+    January: 1,
+    February: 2,
+    March: 3,
+    April: 4,
+    May: 5,
+    June: 6,
+    July: 7,
+    August: 8,
+    September: 9,
+    October: 10,
+    November: 11,
+    December: 12,
+  };
+  const reverseMonthMap = Object.fromEntries(
+    Object.entries(monthMap).map(([k, v]) => [v, k])
+  );
+
+  const leafColorMap = {
+    Green: 1,
+    "Dark Green": 2,
+    "Light Green": 3,
+    "Yellow-Green": 4,
+    Red: 5,
+    Purple: 6,
+    "Variegated (Green/White)": 7,
+    "Variegated (Green/Yellow)": 8,
+    Silver: 9,
+    Bronze: 10,
+  };
+  const reverseLeafColorMap = Object.fromEntries(
+    Object.entries(leafColorMap).map(([k, v]) => [v, k])
+  );
+
   useEffect(() => {
     const checkWatering = async () => {
       try {
@@ -127,6 +177,26 @@ function Dashboard() {
 
       if (editingPlantId) {
         // Update existing plant
+        // map display values to DB IDs where applicable
+        const seasonId = plantForm.bloomingSeason
+          ? seasonMap[plantForm.bloomingSeason] ??
+            (isNaN(Number(plantForm.bloomingSeason))
+              ? null
+              : Number(plantForm.bloomingSeason))
+          : null;
+        const monthId = plantForm.harvestMonth
+          ? monthMap[plantForm.harvestMonth] ??
+            (isNaN(Number(plantForm.harvestMonth))
+              ? null
+              : Number(plantForm.harvestMonth))
+          : null;
+        const leafColorId = plantForm.leafColor
+          ? leafColorMap[plantForm.leafColor] ??
+            (isNaN(Number(plantForm.leafColor))
+              ? null
+              : Number(plantForm.leafColor))
+          : null;
+
         await plantAPI.updatePlant(editingPlantId, {
           name: plantForm.name,
           type: plantForm.type,
@@ -135,23 +205,42 @@ function Dashboard() {
           imageUrl: plantForm.imageFile
             ? plantForm.imageFile.name
             : plantForm.imageUrl || null,
-          bloomingSeason: plantForm.bloomingSeason || null,
+          bloomingSeason: seasonId,
           fragranceLevel: plantForm.fragranceLevel || null,
-          harvestMonth: plantForm.harvestMonth || null,
-          leafColor: plantForm.leafColor || null,
+          harvestMonth: monthId,
+          leafColor: leafColorId,
         });
       } else {
         // Create new plant
+        const seasonId = plantForm.bloomingSeason
+          ? seasonMap[plantForm.bloomingSeason] ??
+            (isNaN(Number(plantForm.bloomingSeason))
+              ? null
+              : Number(plantForm.bloomingSeason))
+          : null;
+        const monthId = plantForm.harvestMonth
+          ? monthMap[plantForm.harvestMonth] ??
+            (isNaN(Number(plantForm.harvestMonth))
+              ? null
+              : Number(plantForm.harvestMonth))
+          : null;
+        const leafColorId = plantForm.leafColor
+          ? leafColorMap[plantForm.leafColor] ??
+            (isNaN(Number(plantForm.leafColor))
+              ? null
+              : Number(plantForm.leafColor))
+          : null;
+
         await plantAPI.createPlant(selectedRoom.roomId, {
           name: plantForm.name,
           type: plantForm.type,
           waterFrequency: parseInt(plantForm.waterFrequency),
           waterAlert: plantForm.waterAlert,
           imageUrl: plantForm.imageFile ? plantForm.imageFile.name : null,
-          bloomingSeason: plantForm.bloomingSeason || null,
+          bloomingSeason: seasonId,
           fragranceLevel: plantForm.fragranceLevel || null,
-          harvestMonth: plantForm.harvestMonth || null,
-          leafColor: plantForm.leafColor || null,
+          harvestMonth: monthId,
+          leafColor: leafColorId,
         });
       }
 
@@ -214,6 +303,49 @@ function Dashboard() {
     // fetch latest plant data
     try {
       const plantDetails = await plantAPI.getPlant(plant.plantId);
+      // convert numeric IDs returned from API back to human-readable names for the form
+      let bloomingSeasonVal = "";
+      if (
+        plantDetails.bloomingSeason !== null &&
+        plantDetails.bloomingSeason !== undefined
+      ) {
+        if (typeof plantDetails.bloomingSeason === "number") {
+          bloomingSeasonVal =
+            reverseSeasonMap[plantDetails.bloomingSeason] ||
+            String(plantDetails.bloomingSeason);
+        } else {
+          bloomingSeasonVal = plantDetails.bloomingSeason;
+        }
+      }
+
+      let harvestMonthVal = "";
+      if (
+        plantDetails.harvestMonth !== null &&
+        plantDetails.harvestMonth !== undefined
+      ) {
+        if (typeof plantDetails.harvestMonth === "number") {
+          harvestMonthVal =
+            reverseMonthMap[plantDetails.harvestMonth] ||
+            String(plantDetails.harvestMonth);
+        } else {
+          harvestMonthVal = plantDetails.harvestMonth;
+        }
+      }
+
+      let leafColorVal = "";
+      if (
+        plantDetails.leafColor !== null &&
+        plantDetails.leafColor !== undefined
+      ) {
+        if (typeof plantDetails.leafColor === "number") {
+          leafColorVal =
+            reverseLeafColorMap[plantDetails.leafColor] ||
+            String(plantDetails.leafColor);
+        } else {
+          leafColorVal = plantDetails.leafColor;
+        }
+      }
+
       setPlantForm({
         name: plantDetails.name || "",
         type: plantDetails.type || plant.type || "",
@@ -224,10 +356,10 @@ function Dashboard() {
             : true,
         imageFile: null,
         imageUrl: plantDetails.imageUrl || plant.imageUrl || null,
-        bloomingSeason: plantDetails.bloomingSeason || "",
+        bloomingSeason: bloomingSeasonVal,
         fragranceLevel: plantDetails.fragranceLevel || "",
-        harvestMonth: plantDetails.harvestMonth || "",
-        leafColor: plantDetails.leafColor || "",
+        harvestMonth: harvestMonthVal,
+        leafColor: leafColorVal,
       });
       setShowPlantModal(true);
     } catch (err) {
@@ -331,27 +463,36 @@ function Dashboard() {
                                 </p>
                               )}
                               {plant.type === "Flower" &&
-                                (plant.fragranceLevel ||
-                                  plant.bloomingSeasonId) && (
+                                plant.bloomingSeason && (
                                   <p className="text-xs text-gray-500">
-                                    {plant.bloomingSeasonId
-                                      ? `Blooming: ${plant.bloomingSeasonId}`
-                                      : null}
-                                    {plant.fragranceLevel
-                                      ? ` • Fragrance: ${plant.fragranceLevel}`
-                                      : null}
+                                    Blooming:{" "}
+                                    {typeof plant.bloomingSeason === "number"
+                                      ? reverseSeasonMap[
+                                          plant.bloomingSeason
+                                        ] || plant.bloomingSeason
+                                      : plant.bloomingSeason}
+                                    <br />
+                                    {plant.fragranceLevel &&
+                                      `Fragrance: ${plant.fragranceLevel}`}
                                   </p>
                                 )}
-                              {plant.type === "Fruit" &&
-                                plant.harvestMonthId && (
-                                  <p className="text-xs text-gray-500">
-                                    Harvest: {plant.harvestMonthId}
-                                  </p>
-                                )}
+                              {plant.type === "Fruit" && plant.harvestMonth && (
+                                <p className="text-xs text-gray-500">
+                                  Harvest:{" "}
+                                  {typeof plant.harvestMonth === "number"
+                                    ? reverseMonthMap[plant.harvestMonth] ||
+                                      plant.harvestMonth
+                                    : plant.harvestMonth}
+                                </p>
+                              )}
                               {plant.type === "Decorative" &&
-                                plant.leafColorId && (
+                                plant.leafColor && (
                                   <p className="text-xs text-gray-500">
-                                    Leaf Color ID: {plant.leafColorId}
+                                    Leaf Color:{" "}
+                                    {typeof plant.leafColor === "number"
+                                      ? reverseLeafColorMap[plant.leafColor] ||
+                                        plant.leafColor
+                                      : plant.leafColor}
                                   </p>
                                 )}
                             </div>
