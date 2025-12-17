@@ -57,16 +57,26 @@ export const roomAPI = {
 export const plantAPI = {
   createPlant: async (roomId, plantData) => {
     const token = localStorage.getItem("token");
-    const response = await axios.post(
-      `${API_URL}/plants`,
-      {
-        roomId,
-        ...plantData,
+    const formData = new FormData();
+    formData.append("roomId", roomId);
+    formData.append("name", plantData.name);
+    formData.append("type", plantData.type);
+    formData.append("waterFrequency", plantData.waterFrequency);
+    formData.append("waterAlert", plantData.waterAlert);
+    formData.append("bloomingSeason", plantData.bloomingSeason || "");
+    formData.append("fragranceLevel", plantData.fragranceLevel || "");
+    formData.append("harvestMonth", plantData.harvestMonth || "");
+    formData.append("leafColor", plantData.leafColor || "");
+    if (plantData.imageFile) {
+      formData.append("image", plantData.imageFile);
+    }
+
+    const response = await axios.post(`${API_URL}/plants`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
       },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    });
     return response.data;
   },
 
@@ -88,13 +98,25 @@ export const plantAPI = {
 
   updatePlant: async (plantId, plantData) => {
     const token = localStorage.getItem("token");
-    const response = await axios.put(
-      `${API_URL}/plants/${plantId}`,
-      plantData,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    const formData = new FormData();
+    formData.append("name", plantData.name);
+    formData.append("type", plantData.type);
+    formData.append("waterFrequency", plantData.waterFrequency);
+    formData.append("waterAlert", plantData.waterAlert);
+    formData.append("bloomingSeason", plantData.bloomingSeason || "");
+    formData.append("fragranceLevel", plantData.fragranceLevel || "");
+    formData.append("harvestMonth", plantData.harvestMonth || "");
+    formData.append("leafColor", plantData.leafColor || "");
+    if (plantData.imageFile) {
+      formData.append("image", plantData.imageFile);
+    }
+
+    const response = await axios.put(`${API_URL}/plants/${plantId}`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   },
 

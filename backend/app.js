@@ -7,6 +7,7 @@ const roomController = require("./src/api/controller/room_controller");
 const plantController = require("./src/api/controller/plant_controller");
 const plantRoutes = require("./src/api/routes/plantRoutes");
 const notificationRoutes = require("./src/api/routes/notificationRoutes");
+const upload = require("./src/middleware/upload_middleware");
 const cron = require("node-cron");
 const PlantRepository = require("./src/repository/plant_repository");
 const UserRepository = require("./src/repository/user_repository");
@@ -47,6 +48,8 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+// Serve uploaded files statically
+app.use("/upls", express.static("upls"));
 // verifyToken middleware (used by many routes)
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -84,7 +87,7 @@ app.delete("/rooms/:roomId", verifyToken, (req, res) =>
 );
 
 // Plant routes I lojm niher qitu
-app.post("/plants", verifyToken, (req, res) =>
+app.post("/plants", verifyToken, upload.single("image"), (req, res) =>
   plantController.addPlant(req, res)
 );
 app.get("/rooms/:roomId/plants", verifyToken, (req, res) =>
@@ -93,7 +96,7 @@ app.get("/rooms/:roomId/plants", verifyToken, (req, res) =>
 app.get("/plants/:plantId", verifyToken, (req, res) =>
   plantController.getPlant(req, res)
 );
-app.put("/plants/:plantId", verifyToken, (req, res) =>
+app.put("/plants/:plantId", verifyToken, upload.single("image"), (req, res) =>
   plantController.updatePlant(req, res)
 );
 app.delete("/plants/:plantId", verifyToken, (req, res) =>

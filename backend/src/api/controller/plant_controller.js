@@ -40,6 +40,9 @@ class PlantController {
         return res.status(403).json({ error: "Unauthorized" });
       }
 
+      // Get image URL if file was uploaded
+      const imageUrl = req.file ? req.file.path : null;
+
       // Create plant with water alert scheduling
       const plant = await plantService.addPlant(
         roomId,
@@ -48,7 +51,7 @@ class PlantController {
           type,
           waterFrequency,
           waterAlert,
-          imageUrl: null,
+          imageUrl,
           bloomingSeason,
           fragranceLevel,
           harvestMonth,

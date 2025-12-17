@@ -202,9 +202,7 @@ function Dashboard() {
           type: plantForm.type,
           waterFrequency: parseInt(plantForm.waterFrequency),
           waterAlert: plantForm.waterAlert,
-          imageUrl: plantForm.imageFile
-            ? plantForm.imageFile.name
-            : plantForm.imageUrl || null,
+          imageFile: plantForm.imageFile,
           bloomingSeason: seasonId,
           fragranceLevel: plantForm.fragranceLevel || null,
           harvestMonth: monthId,
@@ -236,7 +234,7 @@ function Dashboard() {
           type: plantForm.type,
           waterFrequency: parseInt(plantForm.waterFrequency),
           waterAlert: plantForm.waterAlert,
-          imageUrl: plantForm.imageFile ? plantForm.imageFile.name : null,
+          imageFile: plantForm.imageFile,
           bloomingSeason: seasonId,
           fragranceLevel: plantForm.fragranceLevel || null,
           harvestMonth: monthId,
@@ -496,6 +494,13 @@ function Dashboard() {
                                   </p>
                                 )}
                             </div>
+                            {plant.imageUrl && (
+                              <img
+                                src={`http://localhost:5000/${plant.imageUrl}`}
+                                alt={plant.name}
+                                className="w-24 h-20 object-cover rounded ml-3"
+                              />
+                            )}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
