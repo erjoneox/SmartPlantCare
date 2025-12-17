@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const { sendWateringNotification } = require("./email_service");
 
 class PlantService {
@@ -378,6 +380,22 @@ class PlantService {
   async deletePlant(plantId, roomId) {
     if (!plantId || !roomId) {
       throw new Error("Plant ID and Room ID are required");
+    }
+
+    // Get plant data to retrieve image URL
+    const plant = await this.plantRepository.getPlantById(plantId);
+    if (plant && plant.imageUrl) {
+      // Delete image file from upls folder
+      const imagePath = path.join(__dirname, "../../", plant.imageUrl);
+      if (fs.existsSync(imagePath)) {
+        try {
+          fs.unlinkSync(imagePath);
+          console.log("Image deleted:", imagePath);
+        } catch (error) {
+          console.error("Error deleting image file:", error);
+          // Don't throw error, continue with plant deletion
+        }
+      }
     }
 
     // Clear water alert for this plant
