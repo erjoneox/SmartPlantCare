@@ -130,6 +130,10 @@ function Dashboard() {
       setError("Failed to fetch rooms");
     }
   };
+  const totalPlants = rooms.reduce(
+    (sum, room) => sum + (room.numberOfPlants || 0),
+    0
+  );
 
   const handleAddRoom = async (e) => {
     e.preventDefault();
@@ -370,20 +374,60 @@ function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 font-poppins">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Welcome Section */}
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">
-            Welcome, {user?.name || "User"}
-          </h1>
-          <div className="mt-4 text-gray-600">
-            <p>
-              <strong>Email:</strong> {user?.email}
-            </p>
-            <p>
-              <strong>Total Rooms:</strong> {rooms.length}
-            </p>
+        {/* --- WELCOME SECTION --- */}
+        <div className="relative overflow-hidden bg-linear-to-br from-green-800 to-green-900 rounded-[2.5rem] p-8 md:p-12 shadow-2xl mb-12">
+          <div className="absolute top-[-10%] right-[-5%] w-64 h-64 bg-green-500 rounded-full blur-[80px] opacity-20"></div>
+          <div className="absolute bottom-[-20%] left-[10%] w-40 h-40 bg-lime-400 rounded-full blur-[60px] opacity-10"></div>
+
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div>
+              <span className="inline-block px-4 py-1.5 bg-green-500/20 border border-green-400/30 rounded-full text-green-300 text-xs font-bold uppercase tracking-widest mb-4">
+                {new Date().getHours() < 12
+                  ? "🌅 Good Morning"
+                  : "☀️ Good Afternoon"}
+              </span>
+              <h1 className="text-4xl md:text-5xl font-black text-white leading-tight">
+                Welcome back,
+                <br />
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-green-300 to-lime-300">
+                  {user?.name || "Plant Lover"}
+                </span>
+              </h1>
+              <p className="mt-4 text-green-100/70 max-w-md font-light">
+                Your indoor jungle is looking great today. You have{" "}
+                {rooms.length} active zones currently being monitored.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white/10 backdrop-blur-md border border-white/10 p-5 rounded-3xl text-center">
+                <p className="text-green-300 text-xs font-bold uppercase mb-1">
+                  Rooms
+                </p>
+                <p className="text-3xl font-black text-white">{rooms.length}</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-md border border-white/10 p-5 rounded-3xl text-center">
+                <p className="text-green-300 text-xs font-bold uppercase mb-1">
+                  Plants
+                </p>
+                <p className="text-3xl font-black text-white">{totalPlants}</p>
+              </div>
+              <div className="col-span-2 bg-white/5 border border-white/10 p-4 rounded-3xl flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-500 rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-green-900/50">
+                  📧
+                </div>
+                <div className="text-left">
+                  <p className="text-[10px] font-bold text-green-400 uppercase tracking-tighter">
+                    Account Email
+                  </p>
+                  <p className="text-sm font-medium text-white truncate max-w-[200px]">
+                    {user?.email}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
