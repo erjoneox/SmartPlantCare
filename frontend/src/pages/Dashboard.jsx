@@ -59,25 +59,6 @@ function Dashboard() {
     Object.entries(leafColorMap).map(([k, v]) => [v, k])
   );
 
-  useEffect(() => {
-    const checkWatering = async () => {
-      try {
-        const plantsToWater = await notificationAPI.getPlantsToWater();
-        plantsToWater.forEach((plant) => {
-          new Notification(`Water your plant: ${plant.name}`, {
-            body: `It's time to water ${plant.name}! 🌱`,
-          });
-        });
-      } catch (err) {
-        console.error("Failed to fetch watering notifications", err);
-      }
-    };
-
-    checkWatering();
-    const interval = setInterval(checkWatering, 6 * 60 * 60 * 1000); // kontrollo çdo 6 ore
-    return () => clearInterval(interval);
-  }, []);
-
   // Room state
   const [rooms, setRooms] = useState([]);
   const [showRoomModal, setShowRoomModal] = useState(false);

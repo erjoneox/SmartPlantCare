@@ -134,7 +134,7 @@ class PlantService {
       }
 
       // Convert water frequency (days) to milliseconds
-      const alertInterval = waterFrequency * 24 * 60;
+      const alertInterval = waterFrequency * 60 * 1000;
 
       // Clear any existing interval for this plant
       if (this.waterAlertIntervals[plantId]) {
