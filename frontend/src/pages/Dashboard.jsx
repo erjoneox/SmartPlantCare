@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { SessionContext } from "../services/SessionContext";
 import { roomAPI, plantAPI } from "../services/roomService";
 import { notificationAPI } from "../services/notificationService";
+import Swal from "sweetalert2";
 
 function Dashboard() {
   const { user, isLoggedIn } = useContext(SessionContext);
@@ -133,30 +134,64 @@ function Dashboard() {
   const handleAddRoom = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
     setLoading(true);
 
     try {
       await roomAPI.createRoom(roomForm.name, roomForm.comment);
-      setSuccess("Room added successfully!");
+
+      // Show SweetAlert2 success popup (centered)
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Room added successfully!",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+
+      // Reset form & close modal
       setRoomForm({ name: "", comment: "" });
       setShowRoomModal(false);
       fetchRooms();
     } catch (err) {
       setError(err.response?.data?.error || "Failed to add room");
+      console.error("Add room error:", err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteRoom = async (roomId) => {
-    if (!window.confirm("Are you sure you want to delete this room?")) return;
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This room and all its plants will be deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#66BD68",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       await roomAPI.deleteRoom(roomId);
-      setSuccess("Room deleted successfully!");
+
+      Swal.fire({
+        title: "Deleted!",
+        text: "Room deleted successfully.",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
       fetchRooms();
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to delete room");
+      Swal.fire({
+        title: "Error",
+        text: err.response?.data?.error || "Failed to delete room",
+        icon: "error",
+      });
     }
   };
 
@@ -174,28 +209,28 @@ function Dashboard() {
         return;
       }
 
+      // Map display values to DB IDs
+      const seasonId = plantForm.bloomingSeason
+        ? seasonMap[plantForm.bloomingSeason] ??
+          (isNaN(Number(plantForm.bloomingSeason))
+            ? null
+            : Number(plantForm.bloomingSeason))
+        : null;
+      const monthId = plantForm.harvestMonth
+        ? monthMap[plantForm.harvestMonth] ??
+          (isNaN(Number(plantForm.harvestMonth))
+            ? null
+            : Number(plantForm.harvestMonth))
+        : null;
+      const leafColorId = plantForm.leafColor
+        ? leafColorMap[plantForm.leafColor] ??
+          (isNaN(Number(plantForm.leafColor))
+            ? null
+            : Number(plantForm.leafColor))
+        : null;
+
       if (editingPlantId) {
         // Update existing plant
-        // map display values to DB IDs where applicable
-        const seasonId = plantForm.bloomingSeason
-          ? seasonMap[plantForm.bloomingSeason] ??
-            (isNaN(Number(plantForm.bloomingSeason))
-              ? null
-              : Number(plantForm.bloomingSeason))
-          : null;
-        const monthId = plantForm.harvestMonth
-          ? monthMap[plantForm.harvestMonth] ??
-            (isNaN(Number(plantForm.harvestMonth))
-              ? null
-              : Number(plantForm.harvestMonth))
-          : null;
-        const leafColorId = plantForm.leafColor
-          ? leafColorMap[plantForm.leafColor] ??
-            (isNaN(Number(plantForm.leafColor))
-              ? null
-              : Number(plantForm.leafColor))
-          : null;
-
         await plantAPI.updatePlant(editingPlantId, {
           name: plantForm.name,
           type: plantForm.type,
@@ -209,25 +244,6 @@ function Dashboard() {
         });
       } else {
         // Create new plant
-        const seasonId = plantForm.bloomingSeason
-          ? seasonMap[plantForm.bloomingSeason] ??
-            (isNaN(Number(plantForm.bloomingSeason))
-              ? null
-              : Number(plantForm.bloomingSeason))
-          : null;
-        const monthId = plantForm.harvestMonth
-          ? monthMap[plantForm.harvestMonth] ??
-            (isNaN(Number(plantForm.harvestMonth))
-              ? null
-              : Number(plantForm.harvestMonth))
-          : null;
-        const leafColorId = plantForm.leafColor
-          ? leafColorMap[plantForm.leafColor] ??
-            (isNaN(Number(plantForm.leafColor))
-              ? null
-              : Number(plantForm.leafColor))
-          : null;
-
         await plantAPI.createPlant(selectedRoom.roomId, {
           name: plantForm.name,
           type: plantForm.type,
@@ -241,7 +257,18 @@ function Dashboard() {
         });
       }
 
-      setSuccess("Plant added successfully!");
+      // Show SweetAlert2 success popup
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: editingPlantId
+          ? "Plant updated successfully!"
+          : "Plant added successfully!",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+
+      // Reset form & state
       setPlantForm({
         name: "",
         type: "",
@@ -265,13 +292,37 @@ function Dashboard() {
   };
 
   const handleDeletePlant = async (plantId, roomId) => {
-    if (!window.confirm("Are you sure you want to delete this plant?")) return;
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This plant will be permanently deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#66BD68",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       await plantAPI.deletePlant(plantId, roomId);
-      setSuccess("Plant deleted successfully!");
+
+      Swal.fire({
+        title: "Deleted!",
+        text: "Plant deleted successfully.",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
       fetchRooms();
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to delete plant");
+      Swal.fire({
+        title: "Error",
+        text: err.response?.data?.error || "Failed to delete plant",
+        icon: "error",
+      });
     }
   };
 
