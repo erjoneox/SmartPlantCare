@@ -273,22 +273,23 @@ function Dashboard() {
   };
 
   const handleDeletePlant = async (plantId, roomId) => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "This plant will be permanently deleted!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#66BD68",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "Cancel",
-    });
-
-    if (!result.isConfirmed) return;
-
     try {
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "This plant will be permanently deleted!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#66BD68",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "Cancel",
+      });
+
+      if (!result.isConfirmed) return;
+
       await plantAPI.deletePlant(plantId, roomId);
 
+      // Show success
       Swal.fire({
         title: "Deleted!",
         text: "Plant deleted successfully.",
@@ -299,6 +300,7 @@ function Dashboard() {
 
       fetchRooms();
     } catch (err) {
+      console.error(err);
       Swal.fire({
         title: "Error",
         text: err.response?.data?.error || "Failed to delete plant",
