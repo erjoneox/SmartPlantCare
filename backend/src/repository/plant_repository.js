@@ -95,19 +95,6 @@ class PlantRepository {
     return result.rowsAffected[0] > 0;
   }
 
-  async updateSunlightTimer(plantId, startTime, endTime) {
-    const pool = await poolPromise;
-    await pool
-      .request()
-      .input("plantId", sql.Int, plantId)
-      .input("startTime", sql.DateTime, startTime)
-      .input("endTime", sql.DateTime, endTime).query(`
-        UPDATE Plant
-        SET lastSunlightStart = @startTime, lastSunlightEnd = @endTime
-        WHERE plantId = @plantId
-      `);
-  }
-
   async createFlower(plantId, bloomingSeasonId, fragranceLevel = null) {
     const pool = await poolPromise;
 

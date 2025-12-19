@@ -16,34 +16,6 @@ const { sendWateringNotification } = require("./src/service/email_service");
 const plantRepository = new PlantRepository();
 const userRepository = new UserRepository();
 
-// Cron job që ekzekutohet çdo ditë në ora 08:00
-cron.schedule("0 8 * * *", async () => {
-  console.log("Checking plants for watering...");
-  try {
-    const plants = await plantRepository.getAllPlants();
-
-    const today = new Date();
-
-    for (const plant of plants) {
-      const lastWatered = new Date(plant.lastWatered);
-      const diffTime = Math.abs(today - lastWatered);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      // Kontrollo nëse kanë kaluar 3 ditë
-      if (diffDays % 3 === 0) {
-        // Merr emailin e përdoruesit
-        const user = await userRepository.getUserById(plant.userId);
-
-        if (user && user.email) {
-          await sendWateringNotification(user.email, plant.name);
-        }
-      }
-    }
-  } catch (err) {
-    console.error("Error sending watering notifications:", err);
-  }
-});
-
 const app = express();
 
 app.use(cors());

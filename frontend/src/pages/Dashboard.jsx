@@ -72,11 +72,6 @@ function Dashboard() {
       }
     };
 
-    // Kërkon leje për notifikime
-    if (Notification.permission !== "granted") {
-      Notification.requestPermission();
-    }
-
     checkWatering();
     const interval = setInterval(checkWatering, 6 * 60 * 60 * 1000); // kontrollo çdo 6 ore
     return () => clearInterval(interval);
